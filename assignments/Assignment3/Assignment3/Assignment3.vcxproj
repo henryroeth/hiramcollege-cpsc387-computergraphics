@@ -18,6 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="raytracer.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -122,21 +125,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\camera.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\color.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\hittable.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\hittable_list.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\interval.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\material.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\ray.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\rtweekend.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\sphere.h" />
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\vec3.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\main.cc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

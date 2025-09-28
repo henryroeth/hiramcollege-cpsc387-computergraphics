@@ -15,39 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\sphere.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\vec3.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\camera.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\color.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\hittable.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\hittable_list.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\interval.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\material.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\ray.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\rtweekend.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Downloads\raytracing.github.io-release\raytracing.github.io-release\src\InOneWeekend\main.cc">
+    <ClCompile Include="raytracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
