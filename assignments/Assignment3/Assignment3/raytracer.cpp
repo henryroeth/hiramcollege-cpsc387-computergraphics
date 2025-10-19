@@ -1,140 +1,139 @@
 ﻿#include <iostream>
 #include <cmath>
 #include <limits>
-#include <vector>
 
-// ========== Vec3 ==========
-class vec3 {
+// Vec3
+class Vec3 {
 public:
     double x, y, z;
-    vec3() : x(0), y(0), z(0) {}
-    vec3(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
-    vec3 operator+(const vec3& v) const { return vec3(x + v.x, y + v.y, z + v.z); }
-    vec3 operator-(const vec3& v) const { return vec3(x - v.x, y - v.y, z - v.z); }
-    vec3 operator*(double t) const { return vec3(x * t, y * t, z * t); }
-    vec3 operator/(double t) const { return vec3(x / t, y / t, z / t); }
+    Vec3() : x(0), y(0), z(0) {}
+    Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
 
-    double dot(const vec3& v) const { return x * v.x + y * v.y + z * v.z; }
-    double length() const { return std::sqrt(x * x + y * y + z * z); }
-    vec3 normalize() const { return *this / length(); }
+    Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
+    Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
+    Vec3 operator*(double t) const { return Vec3(x * t, y * t, z * t); }
+    Vec3 operator/(double t) const { return *this * (1 / t); }
+
+    double dot(const Vec3& v) const { return x * v.x + y * v.y + z * v.z; }
+    Vec3 normalize() const {
+        double len = std::sqrt(x * x + y * y + z * z);
+        return *this / len;
+    }
 };
 
-using point3 = vec3;
-using color = vec3;
+using Color = Vec3;
+using Point3 = Vec3;
 
-// ========== Ray ==========
-class ray {
+// Ray
+class Ray {
 public:
-    point3 orig;
-    vec3 dir;
+    Point3 orig;
+    Vec3 dir;
 
-    ray() {}
-    ray(const point3& o, const vec3& d) : orig(o), dir(d) {}
-    point3 at(double t) const { return orig + dir * t; }
+    Ray(const Point3& origin, const Vec3& direction) : orig(origin), dir(direction) {}
+
+    Point3 at(double t) const {
+        return orig + dir * t;
+    }
 };
 
-// ========== Sphere ==========
-struct sphere {
-    point3 center;
+// Sphere
+class Sphere {
+public:
+    Point3 center;
     double radius;
-    color col;
+    Color color;
 
-    bool hit(const ray& r, double t_min, double t_max, double& t_hit, vec3& normal, color& out_col) const {
-        vec3 oc = r.orig - center;
-        double a = r.dir.dot(r.dir);
-        double b = 2.0 * oc.dot(r.dir);
-        double c = oc.dot(oc) - radius * radius;
-        double discriminant = b * b - 4 * a * c;
+    Sphere(const Point3& c, double r, const Color& col) : center(c), radius(r), color(col) {}
 
+    bool hit(const Ray& r, double& t) const {
+        Vec3 oc = r.orig - center;
+        auto a = r.dir.dot(r.dir);
+        auto b = 2.0 * oc.dot(r.dir);
+        auto c = oc.dot(oc) - radius * radius;
+        auto discriminant = b * b - 4 * a * c;
         if (discriminant < 0) return false;
-        double sqrtd = std::sqrt(discriminant);
-
-        // nearest root in range
-        double root = (-b - sqrtd) / (2.0 * a);
-        if (root < t_min || root > t_max) {
-            root = (-b + sqrtd) / (2.0 * a);
-            if (root < t_min || root > t_max)
-                return false;
-        }
-
-        t_hit = root;
-        point3 hit_point = r.at(t_hit);
-        normal = (hit_point - center) / radius;
-        out_col = col;
-        return true;
+        t = (-b - std::sqrt(discriminant)) / (2.0 * a);
+        return (t > 0);
     }
 };
 
-// ========== Ray color (Lambertian shading) ==========
-color ray_color(const ray& r, const std::vector<sphere>& scene, const vec3& light_dir) {
-    double closest = std::numeric_limits<double>::infinity();
-    color hit_color(0, 0, 0);
-    bool hit_anything = false;
-
-    for (const auto& s : scene) {
-        double t;
-        vec3 normal;
-        color col;
-        if (s.hit(r, 0.001, closest, t, normal, col)) {
-            hit_anything = true;
-            closest = t;
-            double diff = std::max(0.0, normal.normalize().dot(light_dir));
-            hit_color = col * diff;
-        }
-    }
-
-    if (hit_anything) return hit_color;
-
-    // background gradient
-    vec3 unit_dir = r.dir.normalize();
-    double t = 0.5 * (unit_dir.y + 1.0);
-    return color(1.0, 1.0, 1.0) * (1.0 - t) + color(0.5, 0.7, 1.0) * t;
+// Write out colors to stream
+void write_color(std::ostream& out, const Color& pixel_color) {
+    int ir = static_cast<int>(255.999 * pixel_color.x);
+    int ig = static_cast<int>(255.999 * pixel_color.y);
+    int ib = static_cast<int>(255.999 * pixel_color.z);
+    out << ir << ' ' << ig << ' ' << ib << '\n';
 }
 
-// ========== Main ==========
+// Ray color
+Color ray_color(const Ray& r, const Sphere spheres[], int sphere_count) {
+    double t_closest = std::numeric_limits<double>::max();
+    const Sphere* hit_sphere = nullptr;
+
+    // Find closest sphere hit
+    for (int i = 0; i < sphere_count; i++) {
+        double t;
+        if (spheres[i].hit(r, t) && t < t_closest) {
+            t_closest = t;
+            hit_sphere = &spheres[i];
+        }
+    }
+
+    if (hit_sphere) {
+        Point3 hit_point = r.at(t_closest);
+        Vec3 normal = (hit_point - hit_sphere->center).normalize();
+        Vec3 light_dir = Vec3(1, 1, 1).normalize();
+
+        double diffuse = std::max(0.0, normal.dot(light_dir));
+        return hit_sphere->color * diffuse;
+    }
+
+    // Background
+    Vec3 unit_direction = r.dir.normalize();
+    double t = 0.5 * (unit_direction.y + 1.0);
+    return Color(1.0, 1.0, 1.0) * (1.0 - t) + Color(0.5, 0.7, 1.0) * t;
+}
+
+// Main function
 int main() {
     // Image
     const int image_width = 800;
     const int image_height = 400;
 
     // Camera
-    point3 origin(0, 0, 0);
-    double viewport_height = 2.0;
-    double viewport_width = viewport_height * (double)image_width / image_height;
-    double focal_length = 1.0;
+    Point3 origin(0, 1, 2); // camera position
+    double viewport_height = 2.0; // field of view
+    double viewport_width = (double)image_width / image_height * viewport_height;
+    double focal_length = 1.0; //distance to image plane
 
-    vec3 horizontal(viewport_width, 0, 0);
-    vec3 vertical(0, viewport_height, 0);
-    point3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
+    Vec3 horizontal(viewport_width, 0, 0);
+    Vec3 vertical(0, viewport_height, 0);
+    Point3 lower_left = origin - horizontal / 2 - vertical / 2 - Vec3(0, 0, focal_length);
 
-    // Scene (3 spheres + ground)
-    std::vector<sphere> scene;
-    scene.push_back({ point3(0,-1000.5,-1), 1000.0, color(0.8,0.8,0.0) });
-    scene.push_back({ point3(0,0,-1), 0.5, color(0.7,0.3,0.3) });
-    scene.push_back({ point3(-1,0,-1), 0.5, color(0.3,0.7,0.3) });
-    scene.push_back({ point3(1,0,-1), 0.5, color(0.3,0.3,0.7) });
+    // Sphere colors and positions
+    Sphere spheres[] = {
+        Sphere(Point3(0,-100.5,-1), 100, Color(0.2,0.8,0.0)),
+        Sphere(Point3(0,0,-1), 0.5, Color(0.7,0.5,0.3)),
+        Sphere(Point3(-3,0,-1.5), 0.5, Color(0.1,0.7,0.9)),
+        Sphere(Point3(5,0,-1.5), 0.5, Color(0.8,0.3,0.7))
+    };
 
-    // Light
-    vec3 light_dir = vec3(1, 1, 1).normalize();
-
-    // Output PPM
-    std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
+    // Render
+    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
     for (int j = image_height - 1; j >= 0; --j) {
-        for (int i = 0; i < image_width; ++i) {
+        std::clog << "\rScanlines remaining: " << j << ' ' << std::flush;
+        for (int i = 0; i < image_width; i++) {
             double u = double(i) / (image_width - 1);
             double v = double(j) / (image_height - 1);
-            vec3 dir = lower_left_corner + horizontal * u + vertical * v - origin;
-            ray r(origin, dir);
 
-            color pixel = ray_color(r, scene, light_dir);
-
-            int ir = static_cast<int>(255.999 * pixel.x);
-            int ig = static_cast<int>(255.999 * pixel.y);
-            int ib = static_cast<int>(255.999 * pixel.z);
-
-            std::cout << ir << " " << ig << " " << ib << "\n";
+            Ray r(origin, lower_left + horizontal * u + vertical * v - origin);
+            Color pixel_color = ray_color(r, spheres, 4);
+            write_color(std::cout, pixel_color);
         }
     }
+
+    std::clog << "\nDone.\n";
 }
