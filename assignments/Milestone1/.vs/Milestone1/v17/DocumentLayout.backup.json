@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\henry\\Projects\\hiramcollege-cpsc387-computergraphics\\assignments\\Milestone1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A3AE7E57-069D-4E9C-B579-E4E75B02EA83}|Milestone1\\Milestone1.vcxproj|C:\\Users\\henry\\Projects\\hiramcollege-cpsc387-computergraphics\\assignments\\Milestone1\\Milestone1\\milestone1.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A3AE7E57-069D-4E9C-B579-E4E75B02EA83}|Milestone1\\Milestone1.vcxproj|solutionrelative:Milestone1\\milestone1.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "milestone1.cpp",
+              "DocumentMoniker": "C:\\Users\\henry\\Projects\\hiramcollege-cpsc387-computergraphics\\assignments\\Milestone1\\Milestone1\\milestone1.cpp",
+              "RelativeDocumentMoniker": "Milestone1\\milestone1.cpp",
+              "ToolTip": "C:\\Users\\henry\\Projects\\hiramcollege-cpsc387-computergraphics\\assignments\\Milestone1\\Milestone1\\milestone1.cpp",
+              "RelativeToolTip": "Milestone1\\milestone1.cpp",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAYwGgAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-10-19T19:59:14.832Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
