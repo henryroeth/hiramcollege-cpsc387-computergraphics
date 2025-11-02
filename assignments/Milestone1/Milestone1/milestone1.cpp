@@ -59,51 +59,6 @@ public:
     }
 };
 
-//// Triangle
-//class Triangle {
-//public:
-//    Point3 v0, v1, v2;
-//    Color color;
-//
-//    Triangle(const Point3& a, const Point3& b, const Point3& c, const Color& col)
-//        : v0(a), v1(b), v2(c), color(col) {
-//    }
-//
-//    bool hit(const Ray& r, double& t) const {
-//        const double kEpsilon = 1e-8;
-//
-//        Vec3 v0v1 = v1 - v0;
-//        Vec3 v0v2 = v2 - v0;
-//
-//        Vec3 pvec = Vec3(
-//            r.dir.y * v0v2.z - r.dir.z * v0v2.y,
-//            r.dir.z * v0v2.x - r.dir.x * v0v2.z,
-//            r.dir.x * v0v2.y - r.dir.y * v0v2.x
-//        );
-//
-//        double det = v0v1.dot(pvec);
-//        if (fabs(det) < kEpsilon) return false;
-//
-//        double invDet = 1.0 / det;
-//
-//        Vec3 tvec = r.orig - v0;
-//        double u = tvec.dot(pvec) * invDet;
-//        if (u < 0.0 || u > 1.0) return false;
-//
-//        Vec3 qvec = Vec3(
-//            tvec.y * v0v1.z - tvec.z * v0v1.y,
-//            tvec.z * v0v1.x - tvec.x * v0v1.z,
-//            tvec.x * v0v1.y - tvec.y * v0v1.x
-//        );
-//
-//        double v = r.dir.dot(qvec) * invDet;
-//        if (v < 0.0 || u + v > 1.0) return false;
-//
-//        t = v0v2.dot(qvec) * invDet;
-//        return t > kEpsilon;
-//    }
-//};
-
 // Write out colors to stream
 void write_color(std::ostream& out, const Color& pixel_color) {
     int ir = static_cast<int>(255.999 * pixel_color.x);
@@ -129,15 +84,6 @@ Color ray_color(const Ray& r, const Sphere spheres[], int sphere_count/*,
         }
     }
 
-    /*for (int i = 0; i < tri_count; i++) {
-        double t;
-        if (triangles[i].hit(r, t) && t < t_closest) {
-            t_closest = t;
-            hit_tri = &triangles[i];
-            hit_sphere = nullptr;
-        }
-    }*/
-
     if (hit_sphere) {
         Point3 hit_point = r.at(t_closest);
         Vec3 normal = (hit_point - hit_sphere->center).normalize();
@@ -145,10 +91,6 @@ Color ray_color(const Ray& r, const Sphere spheres[], int sphere_count/*,
         double diffuse = std::max(0.0, normal.dot(light_dir));
         return hit_sphere->color * diffuse;
     }
-
-    /*if (hit_tri) {
-        return hit_tri->color * 0.9;
-    }*/
 
     // Background
     Vec3 unit_direction = r.dir.normalize();
@@ -181,12 +123,6 @@ int main() {
         Sphere(Point3(3,0,-1.5), 0.5, Color(0.2,0.3,0.5)),
         Sphere(Point3(-5,0,-1.5), 0.5, Color(0.8,0.8,0.1))
     };
-
-	//// Triangle colors and positions
- //   Triangle triangles[] = {
- //       Triangle(Point3(-1.8, 0.0, -1.5), Point3(-1.2, 0.0, -1.5), Point3(-1.5, 0.4, -1.5), Color(0.8, 0.4, 0.2)), // lower left
- //       Triangle(Point3(1.2, 0.0, -1.5), Point3(1.8, 0.0, -1.5), Point3(1.5, 0.4, -1.5), Color(0.2, 0.8, 0.3)) // lower right
- //   };
 
     // Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
