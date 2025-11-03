@@ -8,9 +8,6 @@
 #include <limits>
 #include <algorithm>
 
-// If your project is set to Console, you'll get an unresolved main.
-// This pragma forces the Windows subsystem; you can delete it if you've
-// already set Linker → System → Subsystem = Windows in project settings.
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS")
 
 class Vec3 {
@@ -497,7 +494,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
         if (!g_appState) {
             break;
         }
-        bool isRepeat = (lParam & (1u << 30)) != 0; // unsigned to quiet overflow analysis
+        bool isRepeat = (lParam & (1u << 30)) != 0;
         if (wParam < 256) {
             g_appState->keys[wParam] = true;
         }
@@ -521,7 +518,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
         return 0;
     case WM_INPUT:
         if (g_appState) {
-            RAWINPUT raw{}; // zero-init
+            RAWINPUT raw{};
             UINT size = sizeof(raw);
             if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) ==
                 size) {
@@ -541,9 +538,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
 
 int WINAPI wWinMain(
     _In_     HINSTANCE hInstance,
-    _In_opt_ HINSTANCE /*hPrevInstance*/,
-    _In_     PWSTR     /*pCmdLine*/,
-    _In_     int       nCmdShow)
+    _In_opt_ HINSTANCE,
+    _In_     PWSTR,
+    _In_     int nCmdShow)
 {
     AppState app;
     g_appState = &app;
@@ -596,7 +593,7 @@ int WINAPI wWinMain(
 
     app.hwnd = hwnd;
 
-    RAWINPUTDEVICE rid{}; // zero-init
+    RAWINPUTDEVICE rid{}; 
     rid.usUsagePage = 0x01;
     rid.usUsage = 0x02;
     rid.dwFlags = RIDEV_INPUTSINK;

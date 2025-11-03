@@ -1,4 +1,2 @@
 ﻿  milestone3.cpp
-C:\Users\henry\Projects\hiramcollege-cpsc387-computergraphics\assignments\Milestone3\Milestone3\milestone3.cpp(110,17): error C2065: 'M_PI': undeclared identifier
-C:\Users\henry\Projects\hiramcollege-cpsc387-computergraphics\assignments\Milestone3\Milestone3\milestone3.cpp(113,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\henry\Projects\hiramcollege-cpsc387-computergraphics\assignments\Milestone3\Milestone3\milestone3.cpp(114,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Milestone3.vcxproj -> C:\Users\henry\Projects\hiramcollege-cpsc387-computergraphics\assignments\Milestone3\x64\Debug\Milestone3.exe
