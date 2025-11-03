@@ -10,6 +10,9 @@
 
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS")
 
+static const wchar_t* kWindowClassName = L"Milestone3Window";
+
+// Vec3
 class Vec3 {
 public:
     double x, y, z;
@@ -59,6 +62,7 @@ static Vec3 reflect(const Vec3& v, const Vec3& n) {
 using Color = Vec3;
 using Point3 = Vec3;
 
+// Rays
 class Ray {
 public:
     Point3 orig;
@@ -72,6 +76,7 @@ public:
     }
 };
 
+// Intersection data
 class Sphere;
 
 struct HitInfo {
@@ -87,6 +92,7 @@ struct HitInfo {
     }
 };
 
+// Scene geometry
 class Sphere {
 public:
     Point3 center;
@@ -96,8 +102,7 @@ public:
     Color secondary;
     double textureScale = 1.0;
 
-    Sphere() : center(), radius(1.0), albedo(1.0, 1.0, 1.0), checker(false), secondary(1.0, 1.0, 1.0), textureScale(1.0)
-    {
+    Sphere() : center(), radius(1.0), albedo(1.0, 1.0, 1.0), checker(false), secondary(1.0, 1.0, 1.0), textureScale(1.0) {
     }
     Sphere(const Point3& c, double r, const Color& col) : center(c), radius(r), albedo(col), checker(false),
         secondary(1.0, 1.0, 1.0), textureScale(1.0) {
@@ -141,6 +146,7 @@ public:
     }
 };
 
+// Lighting
 enum class LightType {
     Directional,
     Point
@@ -177,6 +183,7 @@ struct Light {
     }
 };
 
+// Camera
 class Camera {
 public:
     Point3 position = Point3(0.0, 1.2, 3.5);
@@ -226,6 +233,7 @@ public:
     }
 };
 
+// Application state
 struct AppState {
     HWND hwnd = nullptr;
     int renderWidth = 800;
@@ -254,6 +262,7 @@ struct AppState {
 
 static AppState* g_appState = nullptr;
 
+// Ray shading
 static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const std::vector<Light>& lights) {
     HitInfo closestHit;
     bool hitAnything = false;
@@ -312,6 +321,7 @@ static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const s
     return lighting.clamp(0.0, 1.0);
 }
 
+// Color packing
 static std::uint32_t toPixel(const Color& c) {
     Color clamped = c.clamp(0.0, 0.999);
     std::uint8_t r = static_cast<std::uint8_t>(clamped.x * 255.0);
@@ -322,6 +332,7 @@ static std::uint32_t toPixel(const Color& c) {
         (static_cast<std::uint32_t>(r) << 16);
 }
 
+// Rendering
 static void renderScene(AppState& app) {
     app.camera.aspect = static_cast<double>(app.renderWidth) / static_cast<double>(app.renderHeight);
 
@@ -337,6 +348,7 @@ static void renderScene(AppState& app) {
     }
 }
 
+// Display
 static void presentFrame(AppState& app) {
     if (!app.hwnd) {
         return;
@@ -365,8 +377,8 @@ static void presentFrame(AppState& app) {
     ReleaseDC(app.hwnd, dc);
 }
 
-static void updateCamera(AppState& app, double dt) {
-    Camera& cam = app.camera;
+// Camera controls
+static void applyMouseLook(AppState& app, Camera& cam) {
     cam.yaw += static_cast<double>(app.mouseDeltaX) * app.mouseSensitivity;
     cam.pitch -= static_cast<double>(app.mouseDeltaY) * app.mouseSensitivity;
     app.mouseDeltaX = 0;
@@ -374,7 +386,9 @@ static void updateCamera(AppState& app, double dt) {
 
     const double pitchLimit = (3.14159265358979323846 / 2.0) - 0.01;
     cam.pitch = std::max(-pitchLimit, std::min(pitchLimit, cam.pitch));
+}
 
+static Vec3 computeMovementDirection(const AppState& app, const Camera& cam) {
     Vec3 forward = cam.forward();
     Vec3 forwardFlat(forward.x, 0.0, forward.z);
     if (forwardFlat.length_squared() > 1e-6) {
@@ -395,6 +409,14 @@ static void updateCamera(AppState& app, double dt) {
     if (app.keys[VK_SPACE]) velocity += worldUp;
     if (app.keys[VK_CONTROL]) velocity -= worldUp;
 
+    return velocity;
+}
+
+static void updateCamera(AppState& app, double dt) {
+    Camera& cam = app.camera;
+    applyMouseLook(app, cam);
+
+    Vec3 velocity = computeMovementDirection(app, cam);
     if (velocity.length_squared() > 0.0) {
         velocity = velocity.normalize();
         double speed = app.moveSpeed;
@@ -405,65 +427,112 @@ static void updateCamera(AppState& app, double dt) {
     }
 }
 
+// Scene animation
+static void animateOrbitingSphere(AppState& app) {
+    if (app.orbitSphereIndex >= app.spheres.size()) {
+        return;
+    }
+    Sphere& orbitSphere = app.spheres[app.orbitSphereIndex];
+    double angle = app.animationTime * app.orbitSpeed;
+    double bounce = std::sin(app.animationTime * 2.0) * 0.2;
+    orbitSphere.center.x = app.orbitCenter.x + std::cos(angle) * app.orbitRadius;
+    orbitSphere.center.z = app.orbitCenter.z + std::sin(angle) * app.orbitRadius;
+    orbitSphere.center.y = app.orbitCenter.y + bounce;
+}
+
+static void animatePointLight(AppState& app) {
+    if (app.pointLightIndex < 0 || app.pointLightIndex >= static_cast<int>(app.lights.size())) {
+        return;
+    }
+    Light& pointLight = app.lights[app.pointLightIndex];
+    double angle = app.animationTime * 0.5;
+    pointLight.position.x = std::cos(angle) * 3.0;
+    pointLight.position.z = std::sin(angle) * 3.0;
+    pointLight.position.y = 2.5 + std::sin(app.animationTime * 1.3) * 0.5;
+}
+
 static void updateScene(AppState& app, double dt) {
     app.animationTime += dt;
+    animateOrbitingSphere(app);
+    animatePointLight(app);
+}
 
-    if (app.orbitSphereIndex < app.spheres.size()) {
-        Sphere& orbitSphere = app.spheres[app.orbitSphereIndex];
-        double angle = app.animationTime * app.orbitSpeed;
-        double bounce = std::sin(app.animationTime * 2.0) * 0.2;
-        orbitSphere.center.x = app.orbitCenter.x + std::cos(angle) * app.orbitRadius;
-        orbitSphere.center.z = app.orbitCenter.z + std::sin(angle) * app.orbitRadius;
-        orbitSphere.center.y = app.orbitCenter.y + bounce;
-    }
+// Scene setup
+static Sphere makeGroundSphere() {
+    Sphere ground(Point3(0.0, -100.5, -1.0), 100.0, Color(0.8, 0.8, 0.8));
+    ground.checker = true;
+    ground.secondary = Color(0.1, 0.1, 0.1);
+    ground.textureScale = 0.5;
+    return ground;
+}
 
-    if (app.pointLightIndex >= 0 && app.pointLightIndex < static_cast<int>(app.lights.size())) {
-        Light& pointLight = app.lights[app.pointLightIndex];
-        double angle = app.animationTime * 0.5;
-        pointLight.position.x = std::cos(angle) * 3.0;
-        pointLight.position.z = std::sin(angle) * 3.0;
-        pointLight.position.y = 2.5 + std::sin(app.animationTime * 1.3) * 0.5;
-    }
+static Sphere makeCenterpieceSphere() {
+    return Sphere(Point3(0.0, 0.6, -2.6), 0.7, Color(0.7, 0.4, 0.3));
+}
+
+static Sphere makeOrbitingSphere() {
+    return Sphere(Point3(1.5, 0.3, -2.6), 0.4, Color(0.2, 0.6, 1.0));
+}
+
+static Sphere makeLeftSphere() {
+    return Sphere(Point3(-1.8, 0.3, -1.5), 0.3, Color(0.9, 0.8, 0.2));
+}
+
+static Sphere makeRightSphere() {
+    return Sphere(Point3(2.0, 0.4, -3.0), 0.6, Color(0.4, 0.8, 0.5));
+}
+
+static Sphere makeMagentaSphere() {
+    return Sphere(Point3(-2.2, 0.2, -3.2), 0.4, Color(0.8, 0.3, 0.7));
+}
+
+static std::vector<Light> createDefaultLights(int& pointLightIndex) {
+    std::vector<Light> lights;
+    lights.push_back(Light::directional(Vec3(-1.0, -1.0, -0.5), Color(1.0, 0.95, 0.9), 1.0));
+    pointLightIndex = static_cast<int>(lights.size());
+    lights.push_back(Light::point(Point3(1.5, 2.5, 0.0), Color(0.6, 0.7, 1.0), 1.6));
+    return lights;
 }
 
 static void initializeScene(AppState& app) {
     app.animationTime = 0.0;
     app.spheres.clear();
 
-    Sphere ground(Point3(0.0, -100.5, -1.0), 100.0, Color(0.8, 0.8, 0.8));
-    ground.checker = true;
-    ground.secondary = Color(0.1, 0.1, 0.1);
-    ground.textureScale = 0.5;
-    app.spheres.push_back(ground);
+    app.spheres.push_back(makeGroundSphere());
+    app.spheres.push_back(makeCenterpieceSphere());
 
-    Sphere centerpiece(Point3(0.0, 0.6, -2.6), 0.7, Color(0.7, 0.4, 0.3));
-    app.spheres.push_back(centerpiece);
-
-    Sphere orbiting(Point3(1.5, 0.3, -2.6), 0.4, Color(0.2, 0.6, 1.0));
     app.orbitSphereIndex = app.spheres.size();
+    app.spheres.push_back(makeOrbitingSphere());
     app.orbitCenter = Point3(0.0, 0.5, -2.6);
     app.orbitRadius = 2.0;
     app.orbitSpeed = 0.6;
-    app.spheres.push_back(orbiting);
 
-    Sphere left(Point3(-1.8, 0.3, -1.5), 0.3, Color(0.9, 0.8, 0.2));
-    app.spheres.push_back(left);
+    app.spheres.push_back(makeLeftSphere());
+    app.spheres.push_back(makeRightSphere());
+    app.spheres.push_back(makeMagentaSphere());
 
-    Sphere right(Point3(2.0, 0.4, -3.0), 0.6, Color(0.4, 0.8, 0.5));
-    app.spheres.push_back(right);
-
-    Sphere magenta(Point3(-2.2, 0.2, -3.2), 0.4, Color(0.8, 0.3, 0.7));
-    app.spheres.push_back(magenta);
-
-    app.lights.clear();
-    Light directional = Light::directional(Vec3(-1.0, -1.0, -0.5), Color(1.0, 0.95, 0.9), 1.0);
-    app.lights.push_back(directional);
-
-    Light point = Light::point(Point3(1.5, 2.5, 0.0), Color(0.6, 0.7, 1.0), 1.6);
-    app.pointLightIndex = static_cast<int>(app.lights.size());
-    app.lights.push_back(point);
+    app.lights = createDefaultLights(app.pointLightIndex);
 }
 
+// Input handling
+static void handleKeyEvent(AppState& app, WPARAM key, bool isDown) {
+    if (key < 256) {
+        app.keys[key] = isDown;
+    }
+}
+
+static void handleRawMouseInput(AppState& app, HRAWINPUT handle) {
+    RAWINPUT raw{};
+    UINT size = sizeof(raw);
+    if (GetRawInputData(handle, RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) == size) {
+        if (raw.header.dwType == RIM_TYPEMOUSE) {
+            app.mouseDeltaX += raw.data.mouse.lLastX;
+            app.mouseDeltaY += raw.data.mouse.lLastY;
+        }
+    }
+}
+
+// Window procedure
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CREATE: {
@@ -495,16 +564,14 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
             break;
         }
         bool isRepeat = (lParam & (1u << 30)) != 0;
-        if (wParam < 256) {
-            g_appState->keys[wParam] = true;
-        }
+        handleKeyEvent(*g_appState, wParam, true);
         if (wParam == VK_ESCAPE && !isRepeat) {
             g_appState->running = false;
             PostQuitMessage(0);
         }
         else if (wParam == 'L' && !isRepeat) {
-            if (g_appState->pointLightIndex >= 0 && g_appState->pointLightIndex <
-                static_cast<int>(g_appState->lights.size())) {
+            if (g_appState->pointLightIndex >= 0 &&
+                g_appState->pointLightIndex < static_cast<int>(g_appState->lights.size())) {
                 Light& pointLight = g_appState->lights[g_appState->pointLightIndex];
                 pointLight.enabled = !pointLight.enabled;
             }
@@ -512,21 +579,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
         return 0;
     }
     case WM_KEYUP:
-        if (g_appState && wParam < 256) {
-            g_appState->keys[wParam] = false;
+        if (g_appState) {
+            handleKeyEvent(*g_appState, wParam, false);
         }
         return 0;
     case WM_INPUT:
         if (g_appState) {
-            RAWINPUT raw{};
-            UINT size = sizeof(raw);
-            if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) ==
-                size) {
-                if (raw.header.dwType == RIM_TYPEMOUSE) {
-                    g_appState->mouseDeltaX += raw.data.mouse.lLastX;
-                    g_appState->mouseDeltaY += raw.data.mouse.lLastY;
-                }
-            }
+            handleRawMouseInput(*g_appState, reinterpret_cast<HRAWINPUT>(lParam));
         }
         return 0;
     default:
@@ -536,46 +595,35 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
     return DefWindowProcW(hwnd, message, wParam, lParam);
 }
 
-int WINAPI wWinMain(
-    _In_     HINSTANCE hInstance,
-    _In_opt_ HINSTANCE,
-    _In_     PWSTR,
-    _In_     int nCmdShow)
-{
-    AppState app;
-    g_appState = &app;
-
-    app.pixels.resize(static_cast<size_t>(app.renderWidth) * static_cast<size_t>(app.renderHeight));
-    std::fill(std::begin(app.keys), std::end(app.keys), false);
-
+// Window helpers
+static void initializeBitmapInfo(AppState& app) {
     app.bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     app.bitmapInfo.bmiHeader.biWidth = app.renderWidth;
     app.bitmapInfo.bmiHeader.biHeight = -app.renderHeight;
     app.bitmapInfo.bmiHeader.biPlanes = 1;
     app.bitmapInfo.bmiHeader.biBitCount = 32;
     app.bitmapInfo.bmiHeader.biCompression = BI_RGB;
+}
 
-    initializeScene(app);
-
+static bool registerWindowClass(HINSTANCE hInstance) {
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.lpszClassName = L"Milestone3Window";
+    wc.lpszClassName = kWindowClassName;
+    return RegisterClassExW(&wc) != 0;
+}
 
-    if (!RegisterClassExW(&wc)) {
-        return 0;
-    }
-
+static HWND createMainWindow(HINSTANCE hInstance, int nCmdShow, AppState& app) {
     DWORD style = WS_OVERLAPPEDWINDOW;
     RECT rect = { 0, 0, app.renderWidth, app.renderHeight };
     AdjustWindowRect(&rect, style, FALSE);
 
     HWND hwnd = CreateWindowExW(
         0,
-        wc.lpszClassName,
+        kWindowClassName,
         L"Interactive Ray Tracer - Milestone 3",
         style,
         CW_USEDEFAULT,
@@ -588,20 +636,70 @@ int WINAPI wWinMain(
         &app);
 
     if (!hwnd) {
-        return 0;
+        return nullptr;
     }
 
-    app.hwnd = hwnd;
+    ShowWindow(hwnd, nCmdShow);
+    UpdateWindow(hwnd);
+    return hwnd;
+}
 
-    RAWINPUTDEVICE rid{}; 
+static void registerMouseInput(HWND hwnd) {
+    RAWINPUTDEVICE rid{};
     rid.usUsagePage = 0x01;
     rid.usUsage = 0x02;
     rid.dwFlags = RIDEV_INPUTSINK;
     rid.hwndTarget = hwnd;
     RegisterRawInputDevices(&rid, 1, sizeof(rid));
+}
 
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
+static bool processSystemMessages(AppState& app, MSG& msg) {
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_QUIT) {
+            app.running = false;
+            return false;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    return app.running;
+}
+
+static double computeDeltaTime(LARGE_INTEGER& previous, LARGE_INTEGER frequency) {
+    LARGE_INTEGER current;
+    QueryPerformanceCounter(&current);
+    double dt = static_cast<double>(current.QuadPart - previous.QuadPart) / static_cast<double>(frequency.QuadPart);
+    previous = current;
+    return std::min(dt, 0.1);
+}
+
+// Application entry point
+int WINAPI wWinMain(
+    _In_     HINSTANCE hInstance,
+    _In_opt_ HINSTANCE,
+    _In_     PWSTR,
+    _In_     int nCmdShow)
+{
+    AppState app;
+    g_appState = &app;
+
+    app.pixels.resize(static_cast<size_t>(app.renderWidth) * static_cast<size_t>(app.renderHeight));
+    std::fill(std::begin(app.keys), std::end(app.keys), false);
+
+    initializeBitmapInfo(app);
+    initializeScene(app);
+
+    if (!registerWindowClass(hInstance)) {
+        return 0;
+    }
+
+    HWND hwnd = createMainWindow(hInstance, nCmdShow, app);
+    if (!hwnd) {
+        return 0;
+    }
+
+    app.hwnd = hwnd;
+    registerMouseInput(hwnd);
 
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
@@ -610,24 +708,11 @@ int WINAPI wWinMain(
 
     MSG msg = {};
     while (app.running) {
-        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            if (msg.message == WM_QUIT) {
-                app.running = false;
-                break;
-            }
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
-        if (!app.running) {
+        if (!processSystemMessages(app, msg)) {
             break;
         }
 
-        LARGE_INTEGER current;
-        QueryPerformanceCounter(&current);
-        double dt = static_cast<double>(current.QuadPart - previous.QuadPart) / static_cast<double>(frequency.QuadPart);
-        previous = current;
-        dt = std::min(dt, 0.1);
-
+        double dt = computeDeltaTime(previous, frequency);
         updateCamera(app, dt);
         updateScene(app, dt);
         renderScene(app);
