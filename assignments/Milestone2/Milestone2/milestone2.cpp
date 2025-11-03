@@ -76,6 +76,7 @@ enum class LightType {
     Point
 };
 
+// Light
 class Light {
 public:
     LightType type;
@@ -189,6 +190,7 @@ int main() {
         Sphere(Point3(-5,0,-1.5), 0.5, Color(0.8,0.8,0.1))
     };
 
+    // Light types, positions, and colors
     Light lights[] = {
         Light::directional(Vec3(-1, -1, -0.5), Color(1.0, 0.95, 0.9), 0.9),
         Light::point(Point3(2, 3, 1), Color(0.6, 0.7, 1.0), 1.2)
