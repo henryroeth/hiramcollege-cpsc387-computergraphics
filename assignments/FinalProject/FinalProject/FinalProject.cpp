@@ -1,5 +1,6 @@
-﻿#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+
 #include <windows.h>
 #include <sal.h>
 #include <vector>
@@ -10,13 +11,15 @@
 
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS")
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static const wchar_t* kWindowClassName = L"Milestone3Window";
 
-// Vec3
 class Vec3 {
 public:
-    double x, y, z;
-
+    double x = 0, y = 0, z = 0;
     Vec3() : x(0.0), y(0.0), z(0.0) {}
     Vec3(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
@@ -37,9 +40,7 @@ public:
 
     Vec3 normalize() const {
         double len = length();
-        if (len <= 0.0) {
-            return Vec3();
-        }
+        if (len <= 0.0) return Vec3();
         return *this / len;
     }
 
@@ -51,40 +52,29 @@ public:
     }
 };
 
-static inline Vec3 operator*(double t, const Vec3& v) {
-    return v * t;
-}
-
-static Vec3 reflect(const Vec3& v, const Vec3& n) {
-    return v - n * (2.0 * v.dot(n));
-}
+static inline Vec3 operator*(double t, const Vec3& v) { return v * t; }
+static Vec3 reflect(const Vec3& v, const Vec3& n) { return v - n * (2.0 * v.dot(n)); }
 
 using Color = Vec3;
 using Point3 = Vec3;
 
-// Rays
 class Ray {
 public:
     Point3 orig;
     Vec3 dir;
-
     Ray() : orig(), dir(0.0, 0.0, 1.0) {}
-    Ray(const Point3& origin, const Vec3& direction) : orig(origin), dir(direction) {}
-
-    Point3 at(double t) const {
-        return orig + dir * t;
-    }
+    Ray(const Point3& o, const Vec3& d) : orig(o), dir(d) {}
+    Point3 at(double t) const { return orig + dir * t; }
 };
 
-// Intersection data
-class Sphere;
+class Sphere; 
 
 struct HitInfo {
     double t = 0.0;
-    Point3 point;
-    Vec3 normal;
+    Point3 point{};
+    Vec3 normal{};
     bool frontFace = false;
-    const Sphere* sphere = nullptr;
+    const Sphere* sphere = nullptr; // null => not a sphere (e.g. cube hit)
 
     void setFaceNormal(const Ray& r, const Vec3& outward) {
         frontFace = r.dir.dot(outward) < 0.0;
@@ -92,7 +82,6 @@ struct HitInfo {
     }
 };
 
-// Scene geometry
 class Sphere {
 public:
     Point3 center;
@@ -102,16 +91,11 @@ public:
     Color secondary;
     double textureScale = 1.0;
 
-    Sphere() : center(), radius(1.0), albedo(1.0, 1.0, 1.0), checker(false), secondary(1.0, 1.0, 1.0), textureScale(1.0) {
-    }
-    Sphere(const Point3& c, double r, const Color& col) : center(c), radius(r), albedo(col), checker(false),
-        secondary(1.0, 1.0, 1.0), textureScale(1.0) {
-    }
+    Sphere() : center(), radius(1.0), albedo(1.0, 1.0, 1.0), checker(false), secondary(1.0, 1.0, 1.0), textureScale(1.0) {}
+    Sphere(const Point3& c, double r, const Color& col) : center(c), radius(r), albedo(col), checker(false), secondary(1.0, 1.0, 1.0), textureScale(1.0) {}
 
     Color sampleColor(const Point3& p) const {
-        if (!checker) {
-            return albedo;
-        }
+        if (!checker) return albedo;
         double scaledX = p.x * textureScale;
         double scaledZ = p.z * textureScale;
         int pattern = (static_cast<int>(std::floor(scaledX)) + static_cast<int>(std::floor(scaledZ))) & 1;
@@ -124,17 +108,13 @@ public:
         double half_b = oc.dot(r.dir);
         double c = oc.dot(oc) - radius * radius;
         double discriminant = half_b * half_b - a * c;
-        if (discriminant < 0.0) {
-            return false;
-        }
+        if (discriminant < 0.0) return false;
         double sqrtD = std::sqrt(discriminant);
 
         double root = (-half_b - sqrtD) / a;
         if (root < tMin || root > tMax) {
             root = (-half_b + sqrtD) / a;
-            if (root < tMin || root > tMax) {
-                return false;
-            }
+            if (root < tMin || root > tMax) return false;
         }
 
         hit.t = root;
@@ -146,11 +126,48 @@ public:
     }
 };
 
-// Lighting
-enum class LightType {
-    Directional,
-    Point
+class Cube {
+public:
+    Point3 mn;
+    Point3 mx;
+    Color color;
+
+    Cube() : mn(-0.5, -0.5, -0.5), mx(0.5, 0.5, 0.5), color(0.8, 0.4, 0.4) {}
+    Cube(const Point3& center, double size, const Color& col) : color(col) {
+        double h = size * 0.5;
+        mn = Point3(center.x - h, center.y - h, center.z - h);
+        mx = Point3(center.x + h, center.y + h, center.z + h);
+    }
+
+    bool hit(const Ray& r, double tMin, double tMax, HitInfo& hit) const {
+        double t0 = tMin, t1 = tMax;
+        for (int i = 0; i < 3; ++i) {
+            double invD = 1.0 / ((&r.dir.x)[i]);
+            double tNear = ((&mn.x)[i] - (&r.orig.x)[i]) * invD;
+            double tFar = ((&mx.x)[i] - (&r.orig.x)[i]) * invD;
+            if (invD < 0.0) std::swap(tNear, tFar);
+            t0 = tNear > t0 ? tNear : t0;
+            t1 = tFar < t1 ? tFar : t1;
+            if (t1 <= t0) return false;
+        }
+        hit.t = t0;
+        hit.point = r.at(hit.t);
+        // determine which face we hit by proximity
+        const double eps = 1e-5;
+        if (std::fabs(hit.point.x - mn.x) < eps) hit.normal = Vec3(-1, 0, 0);
+        else if (std::fabs(hit.point.x - mx.x) < eps) hit.normal = Vec3(1, 0, 0);
+        else if (std::fabs(hit.point.y - mn.y) < eps) hit.normal = Vec3(0, -1, 0);
+        else if (std::fabs(hit.point.y - mx.y) < eps) hit.normal = Vec3(0, 1, 0);
+        else if (std::fabs(hit.point.z - mn.z) < eps) hit.normal = Vec3(0, 0, -1);
+        else hit.normal = Vec3(0, 0, 1);
+        hit.frontFace = r.dir.dot(hit.normal) < 0.0;
+        if (!hit.frontFace) hit.normal = -hit.normal;
+        hit.sphere = nullptr; // mark as non-sphere
+        return true;
+    }
 };
+
+enum class LightType { Directional, Point };
 
 struct Light {
     LightType type = LightType::Directional;
@@ -161,62 +178,37 @@ struct Light {
     bool enabled = true;
 
     static Light directional(const Vec3& dir, const Color& col, double intens) {
-        Light light;
-        light.type = LightType::Directional;
-        light.direction = dir.normalize();
-        light.position = Point3();
-        light.color = col;
-        light.intensity = intens;
-        light.enabled = true;
-        return light;
+        Light L; L.type = LightType::Directional; L.direction = dir.normalize(); L.color = col; L.intensity = intens; L.enabled = true; return L;
     }
-
     static Light point(const Point3& pos, const Color& col, double intens) {
-        Light light;
-        light.type = LightType::Point;
-        light.direction = Vec3();
-        light.position = pos;
-        light.color = col;
-        light.intensity = intens;
-        light.enabled = true;
-        return light;
+        Light L; L.type = LightType::Point; L.position = pos; L.color = col; L.intensity = intens; L.enabled = true; return L;
     }
 };
 
-// Camera
 class Camera {
 public:
     Point3 position = Point3(0.0, 1.2, 3.5);
-    double yaw = 3.14159265358979323846;
+    double yaw = M_PI;
     double pitch = -0.1;
-    double fovY = 60.0 * (3.14159265358979323846 / 180.0);
+    double fovY = 60.0 * (M_PI / 180.0);
     double aspect = 1.0;
 
     Vec3 forward() const {
         double cosPitch = std::cos(pitch);
-        return Vec3(
-            std::sin(yaw) * cosPitch,
-            std::sin(pitch),
-            std::cos(yaw) * cosPitch).normalize();
+        return Vec3(std::sin(yaw) * cosPitch, std::sin(pitch), std::cos(yaw) * cosPitch).normalize();
     }
-
     Vec3 right() const {
         Vec3 f = forward();
         Vec3 worldUp(0.0, 1.0, 0.0);
         Vec3 r = f.cross(worldUp);
-        if (r.length_squared() < 1e-8) {
-            return Vec3(1.0, 0.0, 0.0);
-        }
+        if (r.length_squared() < 1e-8) return Vec3(1.0, 0.0, 0.0);
         return r.normalize();
     }
-
     Vec3 up() const {
         Vec3 r = right();
         Vec3 f = forward();
         Vec3 u = r.cross(f);
-        if (u.length_squared() < 1e-8) {
-            return Vec3(0.0, 1.0, 0.0);
-        }
+        if (u.length_squared() < 1e-8) return Vec3(0.0, 1.0, 0.0);
         return u.normalize();
     }
 
@@ -233,7 +225,6 @@ public:
     }
 };
 
-// Application state
 struct AppState {
     HWND hwnd = nullptr;
     int renderWidth = 800;
@@ -243,8 +234,9 @@ struct AppState {
 
     Camera camera;
     std::vector<Sphere> spheres;
+    Cube centralCube = Cube(Point3(0.0, 0.5, -2.6), 0.8, Color(0.8, 0.4, 0.4));
     size_t orbitSphereIndex = static_cast<size_t>(-1);
-    Point3 orbitCenter;
+    Point3 orbitCenter = Point3(0.0, 0.5, -2.6);
     double orbitRadius = 2.0;
     double orbitSpeed = 0.6;
     double animationTime = 0.0;
@@ -253,7 +245,7 @@ struct AppState {
     int pointLightIndex = -1;
 
     bool running = true;
-    bool keys[256] = {};
+    bool keys[256]{};
     LONG mouseDeltaX = 0;
     LONG mouseDeltaY = 0;
     double moveSpeed = 3.5;
@@ -262,11 +254,19 @@ struct AppState {
 
 static AppState* g_appState = nullptr;
 
-// Ray shading
-static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const std::vector<Light>& lights) {
+static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const Cube& cube, const std::vector<Light>& lights) {
     HitInfo closestHit;
     bool hitAnything = false;
     double closest = std::numeric_limits<double>::max();
+
+    {
+        HitInfo hit;
+        if (cube.hit(r, 0.001, closest, hit)) {
+            hitAnything = true;
+            closest = hit.t;
+            closestHit = hit;
+        }
+    }
 
     for (const Sphere& sphere : spheres) {
         HitInfo hit;
@@ -283,18 +283,19 @@ static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const s
         return Color(1.0, 1.0, 1.0) * (1.0 - t) + Color(0.5, 0.7, 1.0) * t;
     }
 
-    Color baseColor = closestHit.sphere->sampleColor(closestHit.point);
+    Color baseColor;
+    if (closestHit.sphere) baseColor = closestHit.sphere->sampleColor(closestHit.point);
+    else baseColor = cube.color;
+
     Vec3 viewDir = (-r.dir).normalize();
-    const double ambientStrength = 0.15;
-    const double specularStrength = 0.6;
+    const double ambientStrength = 0.12;
+    const double specularStrength = 0.5;
     const double shininess = 32.0;
 
     Color lighting = baseColor * ambientStrength;
 
     for (const Light& light : lights) {
-        if (!light.enabled) {
-            continue;
-        }
+        if (!light.enabled) continue;
         Vec3 lightDir;
         double attenuation = 1.0;
         if (light.type == LightType::Directional) {
@@ -321,7 +322,6 @@ static Color ray_color(const Ray& r, const std::vector<Sphere>& spheres, const s
     return lighting.clamp(0.0, 1.0);
 }
 
-// Color packing
 static std::uint32_t toPixel(const Color& c) {
     Color clamped = c.clamp(0.0, 0.999);
     std::uint8_t r = static_cast<std::uint8_t>(clamped.x * 255.0);
@@ -332,7 +332,6 @@ static std::uint32_t toPixel(const Color& c) {
         (static_cast<std::uint32_t>(r) << 16);
 }
 
-// Rendering
 static void renderScene(AppState& app) {
     app.camera.aspect = static_cast<double>(app.renderWidth) / static_cast<double>(app.renderHeight);
 
@@ -341,65 +340,41 @@ static void renderScene(AppState& app) {
         for (int x = 0; x < app.renderWidth; ++x) {
             double u = static_cast<double>(x) / static_cast<double>(app.renderWidth - 1);
             Ray ray = app.camera.get_ray(u, v);
-            Color color = ray_color(ray, app.spheres, app.lights);
+            Color color = ray_color(ray, app.spheres, app.centralCube, app.lights);
             app.pixels[static_cast<size_t>(y) * static_cast<size_t>(app.renderWidth)
                 + static_cast<size_t>(x)] = toPixel(color);
         }
     }
 }
 
-// Display
 static void presentFrame(AppState& app) {
-    if (!app.hwnd) {
-        return;
-    }
-
+    if (!app.hwnd) return;
     RECT rect{};
     GetClientRect(app.hwnd, &rect);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
 
     HDC dc = GetDC(app.hwnd);
-    StretchDIBits(
-        dc,
-        0,
-        0,
-        width,
-        height,
-        0,
-        0,
-        app.renderWidth,
-        app.renderHeight,
-        app.pixels.data(),
-        &app.bitmapInfo,
-        DIB_RGB_COLORS,
-        SRCCOPY);
+    StretchDIBits(dc, 0, 0, width, height, 0, 0, app.renderWidth, app.renderHeight, app.pixels.data(), &app.bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
     ReleaseDC(app.hwnd, dc);
 }
 
-// Camera controls
 static void applyMouseLook(AppState& app, Camera& cam) {
-    cam.yaw -= static_cast<double>(app.mouseDeltaX) * app.mouseSensitivity;  // <-- flipped sign here
+    cam.yaw -= static_cast<double>(app.mouseDeltaX) * app.mouseSensitivity;
     cam.pitch -= static_cast<double>(app.mouseDeltaY) * app.mouseSensitivity;
     app.mouseDeltaX = 0;
     app.mouseDeltaY = 0;
-
-    const double pitchLimit = (3.14159265358979323846 / 2.0) - 0.01;
+    const double pitchLimit = (M_PI / 2.0) - 0.01;
     cam.pitch = std::max(-pitchLimit, std::min(pitchLimit, cam.pitch));
 }
 
 static Vec3 computeMovementDirection(const AppState& app, const Camera& cam) {
     Vec3 forward = cam.forward();
     Vec3 forwardFlat(forward.x, 0.0, forward.z);
-    if (forwardFlat.length_squared() > 1e-6) {
-        forwardFlat = forwardFlat.normalize();
-    }
-
+    if (forwardFlat.length_squared() > 1e-6) forwardFlat = forwardFlat.normalize();
     Vec3 worldUp(0.0, 1.0, 0.0);
     Vec3 right = forwardFlat.cross(worldUp);
-    if (right.length_squared() > 1e-6) {
-        right = right.normalize();
-    }
+    if (right.length_squared() > 1e-6) right = right.normalize();
 
     Vec3 velocity;
     if (app.keys['W']) velocity += forwardFlat;
@@ -408,30 +383,23 @@ static Vec3 computeMovementDirection(const AppState& app, const Camera& cam) {
     if (app.keys['D']) velocity += right;
     if (app.keys[VK_SPACE]) velocity += worldUp;
     if (app.keys[VK_CONTROL]) velocity -= worldUp;
-
     return velocity;
 }
 
 static void updateCamera(AppState& app, double dt) {
     Camera& cam = app.camera;
     applyMouseLook(app, cam);
-
     Vec3 velocity = computeMovementDirection(app, cam);
     if (velocity.length_squared() > 0.0) {
         velocity = velocity.normalize();
         double speed = app.moveSpeed;
-        if (app.keys[VK_SHIFT]) {
-            speed *= 1.8;
-        }
+        if (app.keys[VK_SHIFT]) speed *= 1.8;
         cam.position += velocity * (speed * dt);
     }
 }
 
-// Scene animation
 static void animateOrbitingSphere(AppState& app) {
-    if (app.orbitSphereIndex >= app.spheres.size()) {
-        return;
-    }
+    if (app.orbitSphereIndex >= app.spheres.size()) return;
     Sphere& orbitSphere = app.spheres[app.orbitSphereIndex];
     double angle = app.animationTime * app.orbitSpeed;
     double bounce = std::sin(app.animationTime * 2.0) * 0.2;
@@ -441,9 +409,7 @@ static void animateOrbitingSphere(AppState& app) {
 }
 
 static void animatePointLight(AppState& app) {
-    if (app.pointLightIndex < 0 || app.pointLightIndex >= static_cast<int>(app.lights.size())) {
-        return;
-    }
+    if (app.pointLightIndex < 0 || app.pointLightIndex >= static_cast<int>(app.lights.size())) return;
     Light& pointLight = app.lights[app.pointLightIndex];
     double angle = app.animationTime * 0.5;
     pointLight.position.x = std::cos(angle) * 3.0;
@@ -457,7 +423,6 @@ static void updateScene(AppState& app, double dt) {
     animatePointLight(app);
 }
 
-// Scene setup
 static Sphere makeGroundSphere() {
     Sphere ground(Point3(0.0, -100.5, -1.0), 100.0, Color(0.8, 0.8, 0.8));
     ground.checker = true;
@@ -466,24 +431,8 @@ static Sphere makeGroundSphere() {
     return ground;
 }
 
-static Sphere makeCenterpieceSphere() {
-    return Sphere(Point3(0.0, 0.6, -2.6), 0.7, Color(0.7, 0.4, 0.3));
-}
-
 static Sphere makeOrbitingSphere() {
     return Sphere(Point3(1.5, 0.3, -2.6), 0.4, Color(0.2, 0.6, 1.0));
-}
-
-static Sphere makeLeftSphere() {
-    return Sphere(Point3(-1.8, 0.3, -1.5), 0.3, Color(0.9, 0.8, 0.2));
-}
-
-static Sphere makeRightSphere() {
-    return Sphere(Point3(2.0, 0.4, -3.0), 0.6, Color(0.4, 0.8, 0.5));
-}
-
-static Sphere makeMagentaSphere() {
-    return Sphere(Point3(-2.2, 0.2, -3.2), 0.4, Color(0.8, 0.3, 0.7));
 }
 
 static std::vector<Light> createDefaultLights(int& pointLightIndex) {
@@ -499,26 +448,17 @@ static void initializeScene(AppState& app) {
     app.spheres.clear();
 
     app.spheres.push_back(makeGroundSphere());
-    app.spheres.push_back(makeCenterpieceSphere());
 
     app.orbitSphereIndex = app.spheres.size();
     app.spheres.push_back(makeOrbitingSphere());
-    app.orbitCenter = Point3(0.0, 0.5, -2.6);
-    app.orbitRadius = 2.0;
-    app.orbitSpeed = 0.6;
 
-    app.spheres.push_back(makeLeftSphere());
-    app.spheres.push_back(makeRightSphere());
-    app.spheres.push_back(makeMagentaSphere());
+    app.centralCube = Cube(app.orbitCenter, 0.8, Color(0.8, 0.4, 0.4));
 
     app.lights = createDefaultLights(app.pointLightIndex);
 }
 
-// Input handling
 static void handleKeyEvent(AppState& app, WPARAM key, bool isDown) {
-    if (key < 256) {
-        app.keys[key] = isDown;
-    }
+    if (key < 256) app.keys[key] = isDown;
 }
 
 static void handleRawMouseInput(AppState& app, HRAWINPUT handle) {
@@ -532,7 +472,6 @@ static void handleRawMouseInput(AppState& app, HRAWINPUT handle) {
     }
 }
 
-// Window procedure
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CREATE: {
@@ -550,52 +489,36 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
         return 0;
     case WM_KILLFOCUS:
         ReleaseCapture();
-        if (g_appState) {
-            std::fill(std::begin(g_appState->keys), std::end(g_appState->keys), false);
-        }
+        if (g_appState) std::fill(std::begin(g_appState->keys), std::end(g_appState->keys), false);
         return 0;
     case WM_SIZE:
-        if (g_appState) {
-            InvalidateRect(hwnd, nullptr, FALSE);
-        }
+        if (g_appState) InvalidateRect(hwnd, nullptr, FALSE);
         return 0;
     case WM_KEYDOWN: {
-        if (!g_appState) {
-            break;
-        }
+        if (!g_appState) break;
         bool isRepeat = (lParam & (1u << 30)) != 0;
         handleKeyEvent(*g_appState, wParam, true);
-        if (wParam == VK_ESCAPE && !isRepeat) {
-            g_appState->running = false;
-            PostQuitMessage(0);
-        }
+        if (wParam == VK_ESCAPE && !isRepeat) { g_appState->running = false; PostQuitMessage(0); }
         else if (wParam == 'L' && !isRepeat) {
-            if (g_appState->pointLightIndex >= 0 &&
-                g_appState->pointLightIndex < static_cast<int>(g_appState->lights.size())) {
-                Light& pointLight = g_appState->lights[g_appState->pointLightIndex];
-                pointLight.enabled = !pointLight.enabled;
+            if (g_appState->pointLightIndex >= 0 && g_appState->pointLightIndex < static_cast<int>(g_appState->lights.size())) {
+                Light& pl = g_appState->lights[g_appState->pointLightIndex];
+                pl.enabled = !pl.enabled;
             }
         }
         return 0;
     }
     case WM_KEYUP:
-        if (g_appState) {
-            handleKeyEvent(*g_appState, wParam, false);
-        }
+        if (g_appState) handleKeyEvent(*g_appState, wParam, false);
         return 0;
     case WM_INPUT:
-        if (g_appState) {
-            handleRawMouseInput(*g_appState, reinterpret_cast<HRAWINPUT>(lParam));
-        }
+        if (g_appState) handleRawMouseInput(*g_appState, reinterpret_cast<HRAWINPUT>(lParam));
         return 0;
     default:
         break;
     }
-
     return DefWindowProcW(hwnd, message, wParam, lParam);
 }
 
-// Window helpers
 static void initializeBitmapInfo(AppState& app) {
     app.bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     app.bitmapInfo.bmiHeader.biWidth = app.renderWidth;
@@ -624,7 +547,7 @@ static HWND createMainWindow(HINSTANCE hInstance, int nCmdShow, AppState& app) {
     HWND hwnd = CreateWindowExW(
         0,
         kWindowClassName,
-        L"Interactive Ray Tracer - Milestone 3",
+        L"Interactive Ray Tracer",
         style,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -635,10 +558,7 @@ static HWND createMainWindow(HINSTANCE hInstance, int nCmdShow, AppState& app) {
         hInstance,
         &app);
 
-    if (!hwnd) {
-        return nullptr;
-    }
-
+    if (!hwnd) return nullptr;
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
     return hwnd;
@@ -655,10 +575,7 @@ static void registerMouseInput(HWND hwnd) {
 
 static bool processSystemMessages(AppState& app, MSG& msg) {
     while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-        if (msg.message == WM_QUIT) {
-            app.running = false;
-            return false;
-        }
+        if (msg.message == WM_QUIT) { app.running = false; return false; }
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
@@ -673,13 +590,7 @@ static double computeDeltaTime(LARGE_INTEGER& previous, LARGE_INTEGER frequency)
     return std::min(dt, 0.1);
 }
 
-// Application entry point
-int WINAPI wWinMain(
-    _In_     HINSTANCE hInstance,
-    _In_opt_ HINSTANCE,
-    _In_     PWSTR,
-    _In_     int nCmdShow)
-{
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ PWSTR, _In_ int nCmdShow) {
     AppState app;
     g_appState = &app;
 
@@ -689,31 +600,17 @@ int WINAPI wWinMain(
     initializeBitmapInfo(app);
     initializeScene(app);
 
-    if (!registerWindowClass(hInstance)) {
-        return 0;
-    }
-
+    if (!registerWindowClass(hInstance)) return 0;
     HWND hwnd = createMainWindow(hInstance, nCmdShow, app);
-    if (!hwnd) {
-        return 0;
-    }
-
+    if (!hwnd) return 0;
     app.hwnd = hwnd;
     registerMouseInput(hwnd);
 
-    // Go fullscreen
+    // Fullscreen
     MONITORINFO mi = { sizeof(mi) };
     if (GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY), &mi)) {
         SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-        SetWindowPos(
-            hwnd,
-            HWND_TOP,
-            mi.rcMonitor.left,
-            mi.rcMonitor.top,
-            mi.rcMonitor.right - mi.rcMonitor.left,
-            mi.rcMonitor.bottom - mi.rcMonitor.top,
-            SWP_FRAMECHANGED | SWP_SHOWWINDOW
-        );
+        SetWindowPos(hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
     }
 
     LARGE_INTEGER frequency;
@@ -723,10 +620,7 @@ int WINAPI wWinMain(
 
     MSG msg = {};
     while (app.running) {
-        if (!processSystemMessages(app, msg)) {
-            break;
-        }
-
+        if (!processSystemMessages(app, msg)) break;
         double dt = computeDeltaTime(previous, frequency);
         updateCamera(app, dt);
         updateScene(app, dt);
