@@ -22,8 +22,6 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 ## Dependencies
 
-This project uses the following libraries and tutorials:
-
 | Library / Resource | Source / Documentation |
 |---------------------|------------------------|
 | **GLFW** | [https://www.glfw.org](https://www.glfw.org) |
