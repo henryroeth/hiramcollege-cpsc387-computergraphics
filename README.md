@@ -32,20 +32,6 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 ---
 
-## Tutorial References
-
-The structure and implementation use structure directly from the following online tutorials and LearnOpenGL chapters:
-
-| My Implementation | Code Used |
-|--------|------------------|
-| Basic Lighting | \[https://learnopengl.com/Lighting/Basic-Lighting](https://learnopengl.com/Lighting/Basic-Lighting) |
-| Phong Lighting | \[https://learnopengl.com/Lighting/Materials](https://learnopengl.com/Lighting/Materials) |
-| Model Loading | \[https://learnopengl.com/Model-Loading/Model](https://learnopengl.com/Model-Loading/Model) |
-| Camera Controls | \[https://learnopengl.com/Getting-started/Camera](https://learnopengl.com/Getting-started/Camera) |
-| Textures | \[https://learnopengl.com/Getting-started/Textures](https://learnopengl.com/Getting-started/Textures) |
-
----
-
 ## Build Instructions
 
 1. Clone or download this repository
