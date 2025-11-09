@@ -58,6 +58,6 @@ This project is the culminating experience of my computer graphics course at Hir
 This project would not have been possible without the following open-source resources and tutorials:
 
 * **LearnOpenGL by Joey de Vries** — [https://learnopengl.com](https://learnopengl.com)
-* **Song Ho’s OpenGL Tutorials** — [https://www.songho.ca/opengl/gl_sphere.html](https://www.songho.ca/opengl/gl_sphere.html)
+* **Song Ho’s OpenGL Tutorials** — [https://www.songho.ca/opengl/gl_sphere.html#sphere](https://www.songho.ca/opengl/gl_sphere.html#sphere)
 * **GLFW, GLAD, GLM, and Assimp** open-source communities
 
