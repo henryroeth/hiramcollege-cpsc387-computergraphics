@@ -8,7 +8,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
-https://github.com/henryroeth/hiramcollege-cpsc387-computergraphics/blob/main/docs/scene\_demo.gif?raw=true
+<img width="426" height="240" alt="image" src="https://github.com/user-attachments/assets/968de8e3-6aa2-4e46-a445-7fa89f6418e8" />
 
 
 
