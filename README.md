@@ -8,7 +8,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
-\[Demo](docs/scene\_demo.gif)
+!\[Demo](docs/scene\_demo.gif)
 
 
 
