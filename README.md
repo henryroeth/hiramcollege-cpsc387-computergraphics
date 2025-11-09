@@ -1,9 +1,3 @@
-# 
-
-!\[Scene demo](docs/scene\_demo.gif)
-
-# 
-
 # Real-Time Rasterizer
 
 ## CPSC387: Computer Graphics
@@ -14,7 +8,11 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
-!\[Demo](https://github.com/henryroeth/hiramcollege-cpsc387-computergraphics/blob/main/docs/scene\_demo.gif?raw=true)
+<div align="center">
+
+&nbsp; <img src="docs/scene\_demo.gif" alt="Scene demo" width="426" height="240" />
+
+</div>
 
 
 
