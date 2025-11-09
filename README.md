@@ -12,7 +12,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 ---
 
-### Features
+## Features
 
 * Real-time Phong and model shaders
 * Model loading and rendering
