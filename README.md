@@ -1,4 +1,4 @@
-# Simple Real-Time Rasterizer
+# Real-Time Rasterizer
 
 ## CPSC387: Computer Graphics
 
