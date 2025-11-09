@@ -1,3 +1,9 @@
+# 
+
+!\[Scene demo](docs/scene\_demo.gif)
+
+# 
+
 # Real-Time Rasterizer
 
 ## CPSC387: Computer Graphics
