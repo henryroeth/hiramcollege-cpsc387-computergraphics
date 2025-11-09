@@ -37,7 +37,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 1. Clone or download this repository
 2. Open the Visual Studio solution (`.sln` file)
-3. Build the project in **Debug** configuration
+3. Build the project in Debug configuration
 4. Run the executable to launch the 3D scene
 
 ---
