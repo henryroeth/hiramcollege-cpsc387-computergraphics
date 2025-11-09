@@ -4,7 +4,6 @@
 
 ![scene_demo](https://github.com/user-attachments/assets/88b186a5-32e4-462b-bc7a-849b7bd57cba)
 
-
 ---
 
 ## Overview
@@ -14,25 +13,10 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 ### Features
 
-* Real-time Phong shading with adjustable light parameters
+* Real-time Phong and model shaders
 * Model loading and rendering using the [Assimp](https://github.com/assimp/assimp) library
-* Textured and procedurally generated geometry (e.g., cube, sphere, plane)
+* Textured and procedurally generated geometry
 * Dynamic lighting toggle and interactive camera controls
-* Clean, modular shader and object management system
-
----
-
-## Code Structure
-
-| Folder / File | Description |
-|----------------|-------------|
-| `main.cpp` | Program entry point. Handles OpenGL initialization, main render loop, and user input. |
-| `shader\_s.h` | Wrapper class for compiling, linking, and using GLSL shaders. |
-| `camera.h` | FPS-style camera implementation for interactive navigation. |
-| `model.h` / `mesh.h` | Object loading and drawing via Assimp. |
-| `sphere.h` | Sphere generation based on parametric geometry (adapted from Song Ho). |
-| `resources/` | Contains textures, models, and shader source files. |
-| `lib/` | External libraries (GLFW, GLAD, GLM, Assimp). |
 
 ---
 
@@ -51,7 +35,7 @@ This project uses the following libraries and tutorials:
 
 ---
 
-## Key Tutorial References
+## Tutorial References
 
 The structure and implementation draw inspiration from the following LearnOpenGL chapters:
 
@@ -67,17 +51,10 @@ The structure and implementation draw inspiration from the following LearnOpenGL
 
 ## Build Instructions
 
-1. Clone or download this repository.
-2. Make sure you have the required libraries located under `lib/`:
-
-   * `glfw-3.4.bin.WIN64`
-   * `glad`
-   * `glm`
-   * `assimp`
-
-3. Open the Visual Studio solution (`.sln` file).
-4. Build the project in **x64 Release** or **Debug** configuration.
-5. Run the executable to launch the 3D scene.
+1. Clone or download this repository
+2. Open the Visual Studio solution (`.sln` file)
+3. Build the project in **x64 Release** or **Debug** configuration
+4. Run the executable to launch the 3D scene
 
 ---
 
@@ -99,11 +76,4 @@ This project would not have been possible without the following open-source reso
 * **LearnOpenGL by Joey de Vries** — [https://learnopengl.com/](https://learnopengl.com/)
 * **Song Ho’s OpenGL Tutorials** — [https://www.songho.ca/opengl/](https://www.songho.ca/opengl/)
 * **GLFW, GLAD, GLM, and Assimp** open-source communities
-
----
-
-## License
-
-This project is for educational purposes only.  
-External libraries and referenced tutorial code retain their respective licenses.
 
