@@ -26,12 +26,12 @@ This project uses the following libraries and tutorials:
 
 | Library / Resource | Source / Documentation |
 |---------------------|------------------------|
-| **GLFW** | \[https://www.glfw.org/](https://www.glfw.org/) |
-| **GLAD** | \[https://glad.dav1d.de/](https://glad.dav1d.de/) |
-| **GLM** | \[https://github.com/g-truc/glm](https://github.com/g-truc/glm) |
-| **Assimp** | \[https://github.com/assimp/assimp](https://github.com/assimp/assimp) |
-| **Song Ho’s Sphere Geometry** | \[https://www.songho.ca/opengl/gl\_sphere.html](https://www.songho.ca/opengl/gl\_sphere.html) |
-| **LearnOpenGL Tutorials** | \[https://learnopengl.com/](https://learnopengl.com/) (used extensively for structure, shading, and rendering examples) |
+| **GLFW** | [https://www.glfw.org](https://www.glfw.org) |
+| **GLAD** | [https://glad.dav1d.de](https://glad.dav1d.de) |
+| **GLM** | [https://github.com/g-truc/glm](https://github.com/g-truc/glm) |
+| **Assimp** | [https://github.com/assimp/assimp](https://github.com/assimp/assimp) |
+| **Song Ho’s Sphere Geometry** | [https://www.songho.ca/opengl/gl\_sphere.html](https://www.songho.ca/opengl/gl\_sphere.html) |
+| **LearnOpenGL Tutorials** | [https://learnopengl.com/](https://learnopengl.com) (used extensively for structure, shading, and rendering examples) |
 
 ---
 
