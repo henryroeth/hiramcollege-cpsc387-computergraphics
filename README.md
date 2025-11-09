@@ -2,9 +2,6 @@
 
 ## CPSC387: Computer Graphics
 
-This project is the culminating experience of my computer graphics course at Hiram College.  
-It integrates and extends algorithms and techniques implemented throughout the semester into a single, interactive 3D graphics application.
-
 ![scene_demo](https://github.com/user-attachments/assets/88b186a5-32e4-462b-bc7a-849b7bd57cba)
 
 
@@ -12,7 +9,8 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 ## Overview
 
-This program implements a **real-time rasterization pipeline** using modern OpenGL (Core Profile 3.3).  
+This project is the culminating experience of my computer graphics course at Hiram College.  
+It integrates and extends algorithms and techniques implemented throughout the semester into a single, interactive 3D graphics application. The program implements a **real-time rasterization pipeline** using modern OpenGL (Core Profile 3.3).  
 It features object rendering with **Phong illumination**, **texture mapping**, and **model loading via Assimp**.
 
 ### Features
