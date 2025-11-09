@@ -8,9 +8,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
-<img src="docs/scene\_demo.gif" alt="Scene demo" width="426" height="240">
-
-
+!\[Demo](https://github.com/henryroeth/hiramcollege-cpsc387-computergraphics/blob/main/docs/scene\_demo.gif?raw=true)
 
 
 
