@@ -10,8 +10,7 @@
 ## Overview
 
 This project is the culminating experience of my computer graphics course at Hiram College.  
-It integrates and extends algorithms and techniques implemented throughout the semester into a single, interactive 3D graphics application. The program implements a **real-time rasterization pipeline** using modern OpenGL (Core Profile 3.3).  
-It features object rendering with **Phong illumination**, **texture mapping**, and **model loading via Assimp**.
+It integrates and extends algorithms and techniques implemented throughout the semester into a single, interactive 3D graphics application. The program implements a **real-time rasterization pipeline** using modern OpenGL (Core Profile 3.3).
 
 ### Features
 
