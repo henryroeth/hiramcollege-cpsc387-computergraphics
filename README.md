@@ -8,6 +8,10 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
+[https://github.com/henryroeth/hiramcollege-cpsc387-computergraphics/blob/main/docs/scene\_demo.gif](https://github.com/henryroeth/hiramcollege-cpsc387-computergraphics/blob/main/docs/scene_demo.gif)
+
+
+
 
 
 
