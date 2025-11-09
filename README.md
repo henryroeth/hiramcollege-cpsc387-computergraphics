@@ -34,7 +34,7 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 ## Tutorial References
 
-The structure and implementation draw inspiration from the following LearnOpenGL chapters:
+The structure and implementation use structure directly from the following online tutorials and LearnOpenGL chapters:
 
 | My Implementation | Code Used |
 |--------|------------------|
