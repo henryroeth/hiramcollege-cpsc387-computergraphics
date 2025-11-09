@@ -36,7 +36,7 @@ It integrates and extends algorithms and techniques implemented throughout the s
 
 The structure and implementation draw inspiration from the following LearnOpenGL chapters:
 
-| Topic | LearnOpenGL Link |
+| My Implementation | Code Used |
 |--------|------------------|
 | Basic Lighting | \[https://learnopengl.com/Lighting/Basic-Lighting](https://learnopengl.com/Lighting/Basic-Lighting) |
 | Phong Lighting | \[https://learnopengl.com/Lighting/Materials](https://learnopengl.com/Lighting/Materials) |
