@@ -14,7 +14,7 @@ It integrates and extends algorithms and techniques implemented throughout the s
 ### Features
 
 * Real-time Phong and model shaders
-* Model loading and rendering using the [Assimp](https://github.com/assimp/assimp) library
+* Model loading and rendering
 * Geometry rendering
 * Dynamic lighting toggle and interactive camera controls
 
