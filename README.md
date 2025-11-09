@@ -36,7 +36,7 @@ This project is the culminating experience of my computer graphics course at Hir
 ## Build Instructions
 
 1. Clone or download this repository
-2. Open the Visual Studio solution (`.sln` file)
+2. Open the Visual Studio solution (compatible with Visual Studio 2022 (v17.x))
 3. Build the project in Debug configuration
 4. Run the executable to launch the 3D scene
 
