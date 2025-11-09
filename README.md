@@ -8,7 +8,7 @@ This project is the culminating experience of my computer graphics course at Hir
 
 
 
-<img width="426" height="240" alt="image" src="https://github.com/user-attachments/assets/968de8e3-6aa2-4e46-a445-7fa89f6418e8" />
+\[Demo](docs/scene\_demo.gif)
 
 
 
