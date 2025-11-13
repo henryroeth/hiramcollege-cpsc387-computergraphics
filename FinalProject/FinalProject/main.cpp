@@ -234,7 +234,7 @@ int main()
 
         // cyborg
         glm::mat4 cyborgModel = glm::mat4(1.0f);
-        cyborgModel = glm::translate(rockModel, glm::vec3(-6.0f, 0.0f, 0.0f)); 
+        cyborgModel = glm::translate(cyborgModel, glm::vec3(-2.0f, 0.0f, 0.0f)); 
         cyborgModel = glm::scale(cyborgModel, glm::vec3(0.5f, 0.5f, 0.5f));	
         modelShader.setMat4("model", cyborgModel);
         cyborgModelReference.Draw(modelShader);
